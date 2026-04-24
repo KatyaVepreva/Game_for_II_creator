@@ -177,6 +177,7 @@ function App() {
   const [answers, setAnswers] = useState<AnswerHistoryItem[]>([]);
   const [bestResult, setBestResult] = useState<BestResult | null>(null);
   const [barFlash, setBarFlash] = useState<"clarity" | "chaos" | null>(null);
+  const [copyStatus, setCopyStatus] = useState<string>("");
 
   const activeQuestion = questions[currentQuestion];
   const result = useMemo(() => getFinalResult(clarity, chaos), [clarity, chaos]);
@@ -257,6 +258,7 @@ function App() {
     setLunaIndex(0);
     setAnswers([]);
     setBarFlash(null);
+    setCopyStatus("");
   };
 
   const finishIfNeeded = (nextQuestionIndex: number) => {
@@ -301,13 +303,43 @@ function App() {
     finishIfNeeded(currentQuestion + 1);
   };
 
+  const fallbackCopy = (text: string) => {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    textarea.style.pointerEvents = "none";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    const copied = document.execCommand("copy");
+    document.body.removeChild(textarea);
+    return copied;
+  };
+
   const copyWithType = async (text: string, type: "result" | "challenge" | "brief") => {
     try {
-      await navigator.clipboard.writeText(text);
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else if (!fallbackCopy(text)) {
+        throw new Error("Fallback copy failed");
+      }
       setCopiedType(type);
+      setCopyStatus("Текст скопирован в буфер обмена.");
       window.setTimeout(() => setCopiedType("none"), 1800);
+      window.setTimeout(() => setCopyStatus(""), 2400);
     } catch {
-      setCopiedType("none");
+      const copied = fallbackCopy(text);
+      if (copied) {
+        setCopiedType(type);
+        setCopyStatus("Текст скопирован в буфер обмена.");
+        window.setTimeout(() => setCopiedType("none"), 1800);
+        window.setTimeout(() => setCopyStatus(""), 2400);
+      } else {
+        setCopiedType("none");
+        setCopyStatus("Не удалось скопировать автоматически. Выдели текст вручную.");
+      }
     }
   };
 
@@ -359,6 +391,7 @@ function App() {
           review={review}
           bestResult={bestResult}
           copiedType={copiedType}
+          copyStatus={copyStatus}
           onRestart={startGame}
           onCopyResult={handleCopyResult}
           onCopyChallenge={handleCopyChallenge}

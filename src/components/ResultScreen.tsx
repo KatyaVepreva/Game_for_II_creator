@@ -18,6 +18,7 @@ type ResultScreenProps = {
   onCopyChallenge: () => void;
   onCopyBrief: () => void;
   copiedType: "result" | "challenge" | "brief" | "none";
+  copyStatus: string;
 };
 
 export function ResultScreen({
@@ -32,7 +33,8 @@ export function ResultScreen({
   onCopyResult,
   onCopyChallenge,
   onCopyBrief,
-  copiedType
+  copiedType,
+  copyStatus
 }: ResultScreenProps) {
   return (
     <section className="glass-card mx-auto w-full max-w-2xl rounded-3xl p-6 shadow-glow animate-fadeUp md:p-10">
@@ -109,6 +111,11 @@ export function ResultScreen({
           {copiedType === "brief" ? "Шаблон скопирован" : "Скопировать шаблон брифа"}
         </button>
       </div>
+      {copyStatus ? (
+        <p className="mt-4 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-sm text-textSoft">
+          {copyStatus}
+        </p>
+      ) : null}
     </section>
   );
 }
