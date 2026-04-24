@@ -1,19 +1,22 @@
 type ProgressBarsProps = {
   clarity: number;
   chaos: number;
+  flash?: "clarity" | "chaos" | null;
 };
 
 function Bar({
   label,
   value,
-  colorClass
+  colorClass,
+  isFlashing
 }: {
   label: string;
   value: number;
   colorClass: string;
+  isFlashing: boolean;
 }) {
   return (
-    <div className="w-full">
+    <div className={`w-full rounded-lg p-1 transition ${isFlashing ? "bar-flash" : ""}`}>
       <div className="mb-1 flex items-center justify-between text-xs text-textSoft">
         <span>{label}</span>
         <span>{value}%</span>
@@ -28,18 +31,20 @@ function Bar({
   );
 }
 
-export function ProgressBars({ clarity, chaos }: ProgressBarsProps) {
+export function ProgressBars({ clarity, chaos, flash = null }: ProgressBarsProps) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       <Bar
         label="Ясность"
         value={clarity}
         colorClass="bg-gradient-to-r from-emerald-400 to-cyan-400"
+        isFlashing={flash === "clarity"}
       />
       <Bar
         label="Хаос"
         value={chaos}
         colorClass="bg-gradient-to-r from-fuchsia-500 to-rose-500"
+        isFlashing={flash === "chaos"}
       />
     </div>
   );
